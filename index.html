@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exam Fees Collection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;600;500;400;300&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #2d6cdf;
+      --secondary: #20c997;
+      --danger: #e74c3c;
+      --text: #23272f;
+      --text-light: #6c757d;
+      --bg: #f5f7fa;
+      --card: #fff;
+      --border: #e3e6ea;
+      --accent: #f1f6fb;
+      --footer-bg: #f8fafc;
+
+      --button-bg: #2d6cdf;
+      --button-hover: #205db7;
+      --button-active: #174c98;
+      --button-text: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Montserrat', 'Poppins', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      -webkit-text-size-adjust: 100%;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 12px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    /* Stylish Header */
+    .header {
+      margin: 0;
+      margin-top: 32px;
+      padding-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: none;
+    }
+    .main-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: 0 4px 24px #dde4fa;
+      margin-bottom: 8px;
+      text-align: center;
+      line-height: 1.1;
+    }
+    .chapter-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text);
+      position: relative;
+      padding-bottom: 12px;
+      margin-top: 2px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .chapter-name::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      width: 90%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 3px;
+    }
+
+    /* Main Layout */
+    .main-content {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      flex: 1;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 12px;
+    }
+
+    /* Card Styles */
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(45, 108, 223, 0.07);
+      padding: 18px 18px 14px 18px;
+      border: 1px solid var(--border);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Summary Card & Pie Chart */
+    .summary-title {
+      font-size: 1.17rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--primary);
+      letter-spacing: 1px;
+    }
+    .summary-compact {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .stats-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    .stat-box {
+      background: var(--accent);
+      color: var(--primary);
+      padding: 9px 14px 7px 14px;
+      border-radius: 7px;
+      min-width: 102px;
+      text-align: center;
+      margin-bottom: 6px;
+      box-shadow: 0 1px 4px #b8c0ff20;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-bottom: 2px;
+      font-weight: 500;
+      letter-spacing: .5px;
+    }
+    .stat-value {
+      font-size: 1.23rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    /* Mini Pie Chart */
+    .mini-pie-wrapper {
+      margin: 10px 0 4px 0;
+      width: 119px;
+      height: 119px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e6f0fd;
+      border-radius: 100%;
+      box-shadow: 0 1px 6px #d1e7ff23;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #donutChart {
+      width: 90px !important;
+      height: 90px !important;
+      max-width: 90px;
+      max-height: 90px;
+      margin: 0 auto;
+      display: block;
+    }
+    .progress-container {
+      margin: 7px 0 0 0;
+      width: 100%;
+    }
+    .progress-bar {
+      height: 9px;
+      background-color: #e3e6ea;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 5px;
+      margin-top: 6px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 6px;
+      transition: width 0.4s ease;
+    }
+    .progress-text {
+      text-align: right;
+      font-size: 13px;
+      color: var(--secondary);
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    .filters-title {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-bottom: 8px;
+      margin-top: 7px;
+      letter-spacing: .3px;
+    }
+    .filter-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .filter-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-weight: 600;
+      min-width: 74px;
+      box-shadow: 0 1px 2px #d8e2f1;
+    }
+    .filter-btn.active,
+    .filter-btn:focus,
+    .filter-btn:hover {
+      background: var(--button-hover);
+      color: #fff;
+    }
+    .text-muted {
+      color: var(--text-light);
+      font-size: 12px;
+      text-align: center;
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
+
+    /* Table Styles */
+    .search-container {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 9px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      min-width: 120px;
+    }
+    .sort-select {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      background-color: white;
+      min-width: 120px;
+    }
+    .students-table {
+      width: 100%;
+      border-collapse: collapse;
+      box-sizing: border-box;
+      table-layout: auto;
+      word-break: break-word;
+      background: white;
+      border-radius: 9px;
+      overflow: hidden;
+    }
+    .students-table th {
+      text-align: left;
+      padding: 12px 8px 12px 13px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-light);
+      border-bottom: 2px solid var(--border);
+      word-break: break-word;
+      background: #e6f0fd;
+    }
+    .students-table td {
+      padding: 12px 8px 12px 13px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      word-break: break-word;
+      background: white;
+    }
+    .students-table td:first-child {
+      max-width: 220px;
+      width: 32vw;
+      min-width: 120px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .02em;
+      color: var(--primary);
+      padding-right: 12px;
+    }
+    /* Large Checkbox */
+    .paid-toggle {
+      width: 1.5em;
+      height: 1.5em;
+      accent-color: var(--secondary);
+      cursor: pointer;
+      margin-right: 5px;
+      transform: scale(1.2);
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid #dde4fa;
+    }
+    .status-dot.paid {
+      background-color: var(--secondary);
+    }
+    .status-dot.unpaid {
+      background-color: var(--danger);
+    }
+    /* Action Buttons: icon-only, smaller, square */
+    .action-buttons {
+      display: flex;
+      gap: 6px;
+    }
+    .action-btn {
+      background: var(--button-bg);
+      border: none;
+      border-radius: 8px;
+      padding: 0;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s, filter 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 34px;
+      width: 34px;
+      min-width: 34px;
+      min-height: 34px;
+      color: var(--button-text);
+      box-shadow: 0 1px 2px #d8e2f1;
+    }
+    .action-btn.edit-btn:hover, .action-btn.edit-btn:focus {
+      background: var(--button-hover);
+      color: #fff;
+    }
+    .action-btn.delete-btn:hover, .action-btn.delete-btn:focus {
+      background: var(--danger);
+      color: #fff;
+    }
+    .action-btn svg {
+      display: block;
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+    }
+
+    /* Footer Buttons */
+    .footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 70px; /* Even more margin between buttons */
+      margin-top: 40px; /* Even more margin above the footer */
+      padding: 24px 0;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.02);
+      width: 100%;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      background: none;
+    }
+    .footer-btn {
+      height: 130px;
+      min-width: 180px;
+      min-height: 130px;
+      max-width: 240px;
+      max-height: 160px;
+      padding: 20px 26px;
+      border-radius: 22px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, filter 0.2s;
+      border: none;
+      font-size: 52px;
+      background: var(--button-bg);
+      color: var(--button-text);
+      box-shadow: 0 2px 16px #d8e2f1;
+      letter-spacing: .03em;
+      gap: 2px;
+    }
+    .footer-btn:hover, .footer-btn:focus {
+      background: var(--button-hover);
+      color: #fff;
+      outline: none;
+      filter: brightness(1.05);
+    }
+    .footer-btn svg, .footer-btn span {
+      pointer-events: none;
+      font-size: 54px;
+      line-height: 1;
+      display: block;
+    }
+    .footer-label {
+      font-size: 1.45rem;
+      font-weight: 500;
+      margin-top: 4px;
+      color: #fff;
+      letter-spacing: .01em;
+      text-align: center;
+    }
+    @media (max-width: 1200px) {
+      .footer {
+        max-width: 100vw;
+        gap: 36px;
+        margin-top: 26px;
+        padding: 12px 0;
+      }
+      .footer-btn {
+        height: 90px;
+        min-width: 120px;
+        min-height: 90px;
+        font-size: 32px;
+        padding: 8px 18px;
+        border-radius: 14px;
+      }
+      .footer-btn svg, .footer-btn span {
+        font-size: 32px;
+      }
+      .footer-label {
+        font-size: 1.1rem;
+        margin-top: 6px;
+      }
+    }
+    @media (max-width: 900px) {
+      .footer {
+        max-width: 100vw;
+        gap: 16px;
+        margin-top: 20px;
+        padding: 8px 0;
+      }
+      .footer-btn {
+        height: 64px;
+        min-width: 88px;
+        min-height: 64px;
+        font-size: 22px;
+        padding: 4px 8px;
+        border-radius: 10px;
+      }
+      .footer-btn svg, .footer-btn span {
+        font-size: 22px;
+      }
+      .footer-label {
+        font-size: 0.9rem;
+        margin-top: 2px;
+      }
+    }
+    @media (max-width: 600px) {
+      .footer {
+        gap: 7px;
+        padding: 6px 0;
+        margin-top: 12px;
+      }
+      .footer-btn {
+        height: 48px;
+        min-width: 56px;
+        min-height: 48px;
+        font-size: 17px;
+        padding: 2px 4px;
+        border-radius: 8px;
+      }
+      .footer-btn svg, .footer-btn span {
+        font-size: 17px;
+      }
+      .footer-label {
+        font-size: 0.75rem;
+        margin-top: 1px;
+      }
+    }
+    @media (max-width: 500px) {
+      .students-table th, .students-table td {
+        padding: 7px 4px;
+        font-size: 12px;
+      }
+      .main-title {
+        font-size: 1.4rem;
+      }
+      .card {
+        padding: 7px 2px 5px 2px;
+      }
+      .footer {
+        gap: 6px;
+      }
+      .footer-btn {
+        font-size: 15px;
+        height: 38px;
+        min-width: 38px;
+        min-height: 38px;
+        border-radius: 6px;
+      }
+    }
+
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal.open {
+      display: flex;
+    }
+    .modal-content {
+      background-color: white;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 410px;
+      padding: 24px 18px 18px 18px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.10);
+      box-sizing: border-box;
+    }
+    .modal-title {
+      font-size: 1.23rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      color: var(--primary);
+      text-align: center;
+    }
+    .modal-input {
+      width: 100%;
+      padding: 13px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 15px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .hidden {
+      display: none;
+    }
+
+    /* Designed Page Footer */
+    .page-footer {
+      margin-top: 40px;
+      padding: 25px 0 14px 0;
+      background: var(--footer-bg);
+      text-align: center;
+      color: var(--primary);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 1.12rem;
+      letter-spacing: .04em;
+      box-shadow: 0 -2px 16px #e3e6ea1a;
+      border-top-left-radius: 22px;
+      border-top-right-radius: 22px;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 900px) {
+      .app-container {
+        padding: 0 2px 0 2px;
+      }
+      .header {
+        margin-top: 18px;
+      }
+    }
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        width: 100%;
+      }
+      .app-container {
+        padding: 0 2px 0 2px;
+        width: 100vw;
+        overflow-x: hidden;
+      }
+      .card {
+        padding: 12px 5px 10px 5px;
+        border-radius: 9px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .footer {
+        flex-direction: row;
+        gap: 18px;
+        max-width: 100vw;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="main-title">Exam Fees Collection</div>
+      <div class="chapter-name" id="subjectName">Reproductive Health</div>
+    </header>
+
+    <main class="main-content">
+      <!-- Summary Section -->
+      <aside class="card">
+        <h3 class="summary-title">Summary</h3>
+        <div class="summary-compact">
+          <div class="mini-pie-wrapper">
+            <canvas id="donutChart" width="90" height="90"></canvas>
+          </div>
+          <div class="progress-text" style="margin-top:3px;">
+            <span id="progressText">95%</span> paid
+          </div>
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill" style="width: 95%"></div>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-label">Total Students</div>
+              <div class="stat-value" id="totalStudents">42</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Collected</div>
+              <div class="stat-value" id="collectedCount">40</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Amount / Student</div>
+              <div class="stat-value text-muted">₹<span id="feeAmount">20</span></div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Total Amount</div>
+              <div class="stat-value">₹<span id="collectedAmount">800</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="filters-title">Quick filters</div>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="paid">Paid</button>
+          <button class="filter-btn" data-filter="unpaid">Unpaid</button>
+        </div>
+        <div class="text-muted">Last saved: <span id="lastSaved">09/08/2025, 17:18:34</span></div>
+      </aside>
+
+      <!-- Students Table -->
+      <section>
+        <div class="card">
+          <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search students by name...">
+            <select class="sort-select" id="sortSelect">
+              <option value="name_asc">Name A→Z</option>
+              <option value="name_desc">Name Z→A</option>
+              <option value="paid_desc">Paid first</option>
+              <option value="paid_asc">Unpaid first</option>
+            </select>
+          </div>
+          <div style="overflow-x:auto; width:100%;">
+            <table class="students-table" id="studentsTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th style="width: 100px">Paid</th>
+                  <th style="width: 120px">Status</th>
+                  <th style="width: 80px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="studentsTbody">
+                <!-- Table rows will be rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <button class="footer-btn" id="importBtn" title="Import">
+        <span>📥</span>
+        <span class="footer-label">Import</span>
+      </button>
+      <button class="footer-btn" id="exportJsonBtn" title="Export">
+        <span>📤</span>
+        <span class="footer-label">Export</span>
+      </button>
+      <button class="footer-btn" id="resetBtn" title="Reset">
+        <span>🔄</span>
+        <span class="footer-label">Reset</span>
+      </button>
+      <button class="footer-btn" id="addBtn" title="Add Student">
+        <span>➕</span>
+        <span class="footer-label">Add Student</span>
+      </button>
+    </footer>
+    <div class="page-footer">
+      © 2025 Pusparghya Manna. All rights reserved.
+
+    </div>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="importFile" accept="application/json" class="hidden">
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+      <div class="modal-content">
+        <h3 class="modal-title" id="modalTitle">Add Student</h3>
+        <input type="text" class="modal-input" id="studentNameInput" placeholder="Student full name">
+        <div class="modal-actions">
+          <button class="footer-btn" id="cancelModal" style="background:var(--footer-bg);color:var(--primary);font-weight:600;">✖</button>
+          <button class="footer-btn" id="saveModal">✔</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- Data & defaults ---
+      const DEFAULT_STUDENTS = [
+        { id:1, name: "Pusparghya Manna", paid:false },
+        { id:2, name: "Rakesh Dhara", paid:false },
+        { id:3, name: "Shreya Das", paid:false },
+        { id:4, name: "Anwesha Pal", paid:false },
+        { id:5, name: "Arpita Chattopadhyay", paid:false },
+        { id:6, name: "Dipika Midday", paid:false },
+        { id:7, name: "Ankita Dutta", paid:false },
+        { id:8, name: "Sk Sahib Rahaman", paid:false },
+        { id:9, name: "Camellia Bose", paid:false },
+        { id:10, name: "Raja Nandy", paid:false },
+        { id:11, name: "Aritra Samaddar", paid:false },
+        { id:12, name: "Ronit Roy", paid:false },
+        { id:13, name: "Bivas Pal", paid:false },
+        { id:14, name: "Debdutta", paid:false },
+        { id:15, name: "Swaraj Ghosh", paid:false },
+        { id:16, name: "Sirjan Saren", paid:false },
+        { id:17, name: "Debolina Biswas", paid:false },
+        { id:18, name: "Preom Tarafdar", paid:false },
+        { id:19, name: "Ankur Dutta", paid:false },
+        { id:20, name: "Kritika Ghosh", paid:false },
+        { id:21, name: "Aritra Chatterjee", paid:false },
+        { id:22, name: "Sanchali Das", paid:false },
+        { id:23, name: "Sehanaj Khatun", paid:false },
+        { id:24, name: "Ankita Bag", paid:false },
+        { id:25, name: "Anik Ghosh", paid:false },
+        { id:26, name: "Agnik Ghosh", paid:false },
+        { id:27, name: "Isana Sultana", paid:false },
+        { id:28, name: "Aritra Ghosh", paid:false },
+        { id:29, name: "Peu Roy", paid:false },
+        { id:30, name: "Anwesha Chattopadhyay", paid:false },
+        { id:31, name: "Sourovi Mondal", paid:false },
+        { id:32, name: "Koustab Ghosh", paid:false },
+        { id:33, name: "Sayantani Banerjee", paid:false },
+        { id:34, name: "Asif Ali", paid:false },
+        { id:35, name: "Soumik Nath", paid:false },
+        { id:36, name: "Ipsita Banik", paid:false },
+        { id:37, name: "Ankita Majumdar", paid:false },
+        { id:38, name: "Suvanita Sadhu", paid:false },
+        { id:39, name: "Sneha Paramanich", paid:false },
+        { id:40, name: "Ankita Pal", paid:false },
+        { id:41, name: "Ankit Ghosh", paid:false },
+        { id:42, name: "Jidan Molla", paid:false }
+      ];
+
+      let students = [];
+      const FEE_PER_STUDENT = 20;
+      let editingId = null;
+
+      // Elements
+      const studentsTbody = document.getElementById('studentsTbody');
+      const totalStudentsEl = document.getElementById('totalStudents');
+      const collectedCountEl = document.getElementById('collectedCount');
+      const collectedAmountEl = document.getElementById('collectedAmount');
+      const progressFill = document.getElementById('progressFill');
+      const progressText = document.getElementById('progressText');
+      const donutCtx = document.getElementById('donutChart');
+      const searchInput = document.getElementById('searchInput');
+      const sortSelect = document.getElementById('sortSelect');
+
+      // Chart
+      let donutChart = null;
+
+      // --- Storage helpers ---
+      function saveState(){
+        localStorage.setItem('efs_students_v2', JSON.stringify(students));
+        localStorage.setItem('efs_subject', document.getElementById('subjectName').textContent);
+        localStorage.setItem('efs_last_saved', new Date().toLocaleString());
+        document.getElementById('lastSaved').textContent = localStorage.getItem('efs_last_saved');
+      }
+
+      function loadState(){
+        const raw = localStorage.getItem('efs_students_v2');
+        if(raw){
+          try{ students = JSON.parse(raw); }
+          catch(e){ students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS)); }
+        } else {
+          students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+          saveState();
+        }
+        const subj = localStorage.getItem('efs_subject');
+        if(subj) document.getElementById('subjectName').textContent = subj;
+        document.getElementById('lastSaved').textContent = localStorage.getItem('efs_last_saved') || 'Never';
+      }
+
+      // --- Utils ---
+      function uid(){ return Math.floor(Math.random()*1e8); }
+
+      function formatCurrency(n){ return n.toLocaleString('en-IN'); }
+
+      // --- Render ---
+      function render(){
+        // apply filters & search & sort
+        const query = searchInput.value.trim().toLowerCase();
+        const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+        const sort = sortSelect.value;
+
+        let list = students.slice();
+
+        if(activeFilter === 'paid') list = list.filter(s=>s.paid);
+        if(activeFilter === 'unpaid') list = list.filter(s=>!s.paid);
+
+        if(query) list = list.filter(s => s.name.toLowerCase().includes(query));
+
+        if(sort === 'name_asc') list.sort((a,b)=>a.name.localeCompare(b.name));
+        if(sort === 'name_desc') list.sort((a,b)=>b.name.localeCompare(a.name));
+        if(sort === 'paid_desc') list.sort((a,b)=> (b.paid - a.paid) || a.name.localeCompare(b.name));
+        if(sort === 'paid_asc') list.sort((a,b)=> (a.paid - b.paid) || a.name.localeCompare(b.name));
+
+        // build table
+        studentsTbody.innerHTML = '';
+        list.forEach(s => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${highlight(s.name, query)}</td>
+            <td>
+              <label style="display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" class="paid-toggle" data-id="${s.id}" ${s.paid? 'checked': ''}>
+                <span class="text-muted">₹${FEE_PER_STUDENT}</span>
+              </label>
+            </td>
+            <td>
+              <div class="status-indicator">
+                <div class="status-dot ${s.paid? 'paid':'unpaid'}"></div>
+                <span>${s.paid? 'Paid':'Not paid'}</span>
+              </div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <!-- Edit Icon -->
+                <button class="action-btn edit-btn" data-edit="${s.id}" title="Edit">
+                  <svg viewBox="0 0 20 20" fill="none"><path d="M4 13.5V16h2.5l7.06-7.06-2.5-2.5L4 13.5zm13.71-7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" fill="currentColor"/></svg>
+                </button>
+                <!-- Delete Icon -->
+                <button class="action-btn delete-btn" data-delete="${s.id}" title="Delete">
+                  <svg viewBox="0 0 20 20" fill="none"><path d="M7 8v6m3-6v6m3-6v6M4 6h12M6 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+            </td>
+          `;
+          studentsTbody.appendChild(tr);
+        });
+
+        attachRowListeners();
+        updateStats();
+      }
+
+      function highlight(text, q){
+        if(!q) return escapeHtml(text);
+        const idx = text.toLowerCase().indexOf(q);
+        if(idx === -1) return escapeHtml(text);
+        return escapeHtml(text.substring(0,idx)) + '<mark>' + escapeHtml(text.substring(idx, idx+q.length)) + '</mark>' + escapeHtml(text.substring(idx+q.length));
+      }
+
+      function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+      function attachRowListeners(){
+        document.querySelectorAll('.paid-toggle').forEach(cb=>{
+          cb.onchange = function(){
+            const id = parseInt(this.dataset.id);
+            const st = students.find(x=>x.id===id);
+            if(st){ st.paid = this.checked; saveState(); render(); }
+          };
+        });
+
+        document.querySelectorAll('[data-edit]').forEach(btn=>{
+          btn.onclick = function(){ openModal('edit', parseInt(this.dataset.edit)); };
+        });
+
+        document.querySelectorAll('[data-delete]').forEach(btn=>{
+          btn.onclick = function(){
+            const id = parseInt(this.dataset.delete);
+            if(confirm('Delete this student?')){ students = students.filter(s=>s.id!==id); saveState(); render(); }
+          };
+        });
+      }
+
+      // --- Stats & Chart ---
+      function updateStats(){
+        const total = students.length;
+        const paidCount = students.filter(s=>s.paid).length;
+        const amount = paidCount * FEE_PER_STUDENT;
+        totalStudentsEl.textContent = total;
+        collectedCountEl.textContent = paidCount;
+        collectedAmountEl.textContent = formatCurrency(amount);
+
+        const pct = total ? Math.round((paidCount/total)*100) : 0;
+        progressFill.style.width = pct + '%';
+        progressText.textContent = pct + '%';
+
+        // donut chart
+        if(!donutChart){
+          donutChart = new Chart(donutCtx,{
+            type:'doughnut',
+            data:{labels:['Paid','Unpaid'],datasets:[{data:[paidCount, total-paidCount],backgroundColor:['#20c997','#e74c3c']}],
+            },
+            options:{
+              responsive:true,
+              maintainAspectRatio:false,
+              plugins:{
+                legend:{display:false},
+                tooltip: {
+                  callbacks: {
+                    label: function(ctx){
+                      return ctx.label+": "+ctx.raw;
+                    }
+                  }
+                }
+              },
+              cutout: '72%',
+              layout: {padding: 0}
+            }
+          });
+        } else {
+          donutChart.data.datasets[0].data = [paidCount, total-paidCount];
+          donutChart.update();
+        }
+        document.getElementById('feeAmount').textContent = FEE_PER_STUDENT;
+        document.getElementById('lastSaved').textContent = localStorage.getItem('efs_last_saved') || 'Never';
+      }
+
+      // --- Modal ---
+      const modal = document.getElementById('modal');
+      const modalTitle = document.getElementById('modalTitle');
+      const studentNameInput = document.getElementById('studentNameInput');
+      const saveModalBtn = document.getElementById('saveModal');
+      const cancelModal = document.getElementById('cancelModal');
+
+      function openModal(mode, id){
+        editingId = null;
+        studentNameInput.value = '';
+        if(mode === 'add'){
+          modalTitle.textContent = 'Add Student';
+        } else if(mode === 'edit'){
+          modalTitle.textContent = 'Edit Student';
+          const s = students.find(x=>x.id===id);
+          if(s){ 
+            editingId = id; 
+            studentNameInput.value = s.name; 
+          }
+        }
+        modal.classList.add('open');
+        studentNameInput.focus();
+      }
+
+      function closeModal(){ modal.classList.remove('open'); editingId = null; }
+
+      saveModalBtn.onclick = function(){
+        const name = studentNameInput.value.trim();
+        if(!name){ alert('Enter a name'); return; }
+        if(editingId){
+          const st = students.find(s=>s.id===editingId);
+          if(st){ st.name = name; }
+        } else {
+          students.push({ id: uid(), name: name, paid: false });
+        }
+        saveState(); render(); closeModal();
+      };
+
+      cancelModal.onclick = closeModal;
+
+      // --- File import/export ---
+      document.getElementById('importBtn').onclick = ()=> document.getElementById('importFile').click();
+      document.getElementById('importFile').onchange = async function(e){
+        const f = e.target.files[0]; if(!f) return;
+        try{
+          const text = await f.text(); const data = JSON.parse(text);
+          if(!Array.isArray(data.students)) return alert('Invalid file format');
+          if(confirm(`Import ${data.students.length} students and replace current data?`)){
+            students = data.students; saveState(); render(); alert('Imported');
+          }
+        }catch(err){ alert('Import failed: '+err.message); }
+        this.value = '';
+      };
+
+      document.getElementById('exportJsonBtn').onclick = function(){
+        const payload = { metadata:{ exported_at:new Date().toISOString(), subject:document.getElementById('subjectName').textContent, total:students.length }, students };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `exam_fees_${Date.now()}.json`; a.click(); URL.revokeObjectURL(a.href);
+      };
+
+      // --- Reset button ---
+      document.getElementById('resetBtn').onclick = function(){
+        if(confirm('Reset to default values? This will clear all current data.')) {
+          localStorage.removeItem('efs_students_v2');
+          localStorage.removeItem('efs_subject');
+          localStorage.removeItem('efs_last_saved');
+          loadState();
+          render();
+          alert('Data has been reset to default values.');
+        }
+      };
+
+      // --- Other UI wiring ---
+      document.getElementById('addBtn').onclick = ()=> openModal('add');
+      document.getElementById('searchInput').oninput = debounce(()=> render(), 220);
+      document.getElementById('sortSelect').onchange = ()=> render();
+
+      // filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn=>{
+        btn.onclick = function(){
+          document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+          this.classList.add('active');
+          render();
+        };
+      });
+
+      // Edit chapter name
+      document.getElementById('subjectName').onclick = function(){
+        const newName = prompt('Enter chapter name', this.textContent);
+        if(newName && newName.trim()){ 
+          this.textContent = newName.trim(); 
+          localStorage.setItem('efs_subject', newName.trim()); 
+          saveState(); 
+        }
+      };
+
+      // helper debounce
+      function debounce(fn,wait){ let t; return function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), wait); } }
+
+      // --- Init ---
+      loadState(); render();
+      // safety: ensure saved timestamp
+      localStorage.setItem('efs_last_saved', localStorage.getItem('efs_last_saved') || new Date().toLocaleString());
+      document.getElementById('lastSaved').textContent = localStorage.getItem('efs_last_saved');
+    </script>
+  </div>
+</body>
+</html>
