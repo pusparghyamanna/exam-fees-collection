@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Exam Fees Dashboard — Reproductive Health</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --accent-1: #06b6d4;
+      --accent-2: #7c3aed;
+      --muted: #4b5563;
+      --glass: rgba(0,0,0,0.04);
+      --surface: #ffffff;
+      --success: #10b981;
+      --danger: #ef4444;
+      --soft: #e5e7eb;
+      background: linear-gradient(180deg,#f9fafb 0%, #f3f4f6 60%);
+      color: #111827;
+    }
+
+    /* Reset & base */
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial; background: linear-gradient(180deg,#f9fafb 0%, #f3f4f6 60%); color:#111827}
+    a{color:inherit}
+
+    /* Container */
+    .wrap{max-width:1100px;margin:18px auto;padding:18px; display:flex; flex-direction:column; min-height:100vh;}
+
+    /* Header */
+    header{display:flex; flex-direction:column; gap:12px; margin-bottom:24px;}
+    .header-top{display:flex; justify-content:space-between; align-items:center;}
+    .header-title{font-size:28px; font-weight:800; background:linear-gradient(90deg,var(--accent-2),var(--accent-1)); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
+    .chapter-name{font-size:20px; font-weight:600; color:var(--accent-2); padding:8px 0; border-bottom:2px solid var(--accent-1); display:inline-block;}
+
+    /* Main grid */
+    .grid{display:grid;grid-template-columns:320px 1fr;gap:18px; flex:1;}
+
+    /* Sidebar card */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    .card h3{margin:0 0 10px;font-size:14px}
+    .stats{display:flex;flex-direction:column;gap:12px}
+    .stat-row{display:flex;justify-content:space-between;align-items:center}
+    .stat-big{font-size:22px;font-weight:700}
+    .muted{color:var(--muted);font-size:13px}
+
+    /* Progress */
+    .progress-wrap{background:rgba(255,255,255,0.03);padding:10px;border-radius:10px}
+    .progress-bar{height:12px;background:rgba(0,0,0,0.2);border-radius:999px;overflow:hidden}
+    .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent-2),var(--accent-1));border-radius:999px;transition:width 400ms ease}
+
+    /* Search & filters */
+    .search{display:flex;gap:8px;margin-bottom:12px}
+    .search input{flex:1;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.02);color:inherit}
+    .filters{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{padding:8px 10px;border-radius:999px;background:rgba(255,255,255,0.02);cursor:pointer;border:1px solid rgba(255,255,255,0.02)}
+    .chip.active{background:linear-gradient(90deg,var(--accent-2),var(--accent-1));color:white;border:none}
+
+    /* Table */
+    .table-wrap{overflow:auto;background:transparent}
+    table{width:100%;border-collapse:collapse;margin-top:6px}
+    thead th{position:sticky;top:0;background:rgba(255,255,255,0.02);font-weight:600;padding:12px;text-align:left;font-size:13px}
+    tbody td{padding:12px;border-top:1px solid rgba(255,255,255,0.03);font-size:14px}
+    tbody tr:hover{background:rgba(255,255,255,0.02)}
+    .status-dot{width:10px;height:10px;border-radius:50%}
+    .status-paid{background:var(--success)}
+    .status-unpaid{background:var(--danger)}
+    .action-buttons{display:flex;gap:8px}
+    .tiny{padding:6px 8px;font-size:13px;border-radius:8px}
+
+    /* Footer */
+    .footer{display:flex; justify-content:center; gap:12px; margin-top:24px; padding:12px; border-radius:10px; background:rgba(255,255,255,0.02);}
+    .footer-btn{background:linear-gradient(90deg,var(--accent-2),var(--accent-1)); color:white; border:none; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:500; display:flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(124,58,237,0.2);}
+
+    /* Modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.9));z-index:40}
+    .modal.open{display:flex}
+    .modal-card{background:linear-gradient(180deg,#ffffff,#f8fafc);padding:18px;border-radius:12px;width:100%;max-width:540px;border:1px solid rgba(0,0,0,0.06);color:#111827}
+    .modal-card h3{margin-top:0}
+    .formrow{display:flex;gap:10px;align-items:center}
+    .formrow input{flex:1;padding:10px;border-radius:8px;border:none;background:rgba(255,255,255,0.02);color:inherit}
+
+    /* small screens */
+    @media (max-width:900px){
+      .grid{grid-template-columns:1fr;}
+    }
+
+    /* subtle utilities */
+    .hidden{display:none}
+    .muted-text{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="header-top">
+        <div class="header-title">Exam Fees System</div>
+      </div>
+      <div class="chapter-name" id="subjectName">Reproductive Health</div>
+    </header>
+
+    <main class="grid">
+      <!-- Left Sidebar -->
+      <aside class="card">
+        <h3>Summary</h3>
+        <div class="stats">
+          <div class="stat-row">
+            <div>
+              <div class="muted">Total Students</div>
+              <div class="stat-big" id="totalStudents">0</div>
+            </div>
+            <div>
+              <div class="muted">Collected</div>
+              <div class="stat-big" id="collectedCount">0</div>
+            </div>
+          </div>
+
+          <div class="stat-row">
+            <div>
+              <div class="muted">Amount / Student</div>
+              <div class="muted-text">₹<span id="feeAmount">20</span></div>
+            </div>
+            <div>
+              <div class="muted">Total Amount</div>
+              <div class="stat-big">₹<span id="collectedAmount">0</span></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="muted">Collection Progress</div>
+            <div class="progress-wrap">
+              <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+            </div>
+            <div style="text-align:right;margin-top:6px;font-size:13px;color:var(--muted)"><span id="progressText">0%</span> paid</div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+            <canvas id="donutChart" width="220" height="140"></canvas>
+          </div>
+
+          <div style="margin-top:8px" class="muted">Quick filters</div>
+          <div class="filters" style="margin-top:8px">
+            <div class="chip active" data-filter="all">All</div>
+            <div class="chip" data-filter="paid">Paid</div>
+            <div class="chip" data-filter="unpaid">Unpaid</div>
+          </div>
+
+          <div class="muted" style="margin-top:12px">Last saved: <span id="lastSaved">Never</span></div>
+        </div>
+      </aside>
+
+      <!-- Right (main) -->
+      <section>
+        <div class="card">
+          <div class="search">
+            <input id="searchInput" placeholder="Search students by name..." />
+            <select id="sortSelect" class="btn" style="min-width:140px">
+              <option value="name_asc">Sort: Name A→Z</option>
+              <option value="name_desc">Sort: Name Z→A</option>
+              <option value="paid_desc">Sort: Paid first</option>
+              <option value="paid_asc">Sort: Unpaid first</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <table id="studentsTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th style="width:110px">Paid</th>
+                  <th style="width:140px">Status</th>
+                  <th style="width:160px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="studentsTbody">
+                <!-- rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="footer">
+      <button class="footer-btn" id="importBtn">📥 Import</button>
+      <button class="footer-btn" id="exportJsonBtn">📤 Export JSON</button>
+      <button class="footer-btn" id="resetBtn">🔄 Reset</button>
+      <button class="footer-btn" id="addBtn">➕ Add Student</button>
+    </div>
+  </div>
+
+  <!-- Hidden file input for import -->
+  <input type="file" id="importFile" accept="application/json" class="hidden">
+
+  <!-- Modal (Add / Edit) -->
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal-card">
+      <h3 id="modalTitle">Add Student</h3>
+      <div style="margin-top:10px">
+        <input id="studentNameInput" placeholder="Student full name" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;" />
+        <div style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px">
+          <button class="btn" id="cancelModal">Cancel</button>
+          <button class="btn primary" id="saveModal">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Data & defaults ---
+    const DEFAULT_STUDENTS = [
+      { id:1, name: "Pusparghya Manna", paid:false },
+      { id:2, name: "Rakesh Dhara", paid:false },
+      { id:3, name: "Shreya Das", paid:false },
+      { id:4, name: "Anwesha Pal", paid:false },
+      { id:5, name: "Arpita Chattopadhyay", paid:false },
+      { id:6, name: "Dipika Midday", paid:false },
+      { id:7, name: "Ankita Dutta", paid:false },
+      { id:8, name: "Sk Sahib Rahaman", paid:false },
+      { id:9, name: "Camellia Bose", paid:false },
+      { id:10, name: "Raja Nandy", paid:false },
+      { id:11, name: "Aritra Samaddar", paid:false },
+      { id:12, name: "Ronit Roy", paid:false },
+      { id:13, name: "Bivas Pal", paid:false },
+      { id:14, name: "Debdutta", paid:false },
+      { id:15, name: "Swaraj Ghosh", paid:false },
+      { id:16, name: "Sirjan Saren", paid:false },
+      { id:17, name: "Debolina Biswas", paid:false },
+      { id:18, name: "Preom Tarafdar", paid:false },
+      { id:19, name: "Ankur Dutta", paid:false },
+      { id:20, name: "Kritika Ghosh", paid:false },
+      { id:21, name: "Aritra Chatterjee", paid:false },
+      { id:22, name: "Sanchali Das", paid:false },
+      { id:23, name: "Sehanaj Khatun", paid:false },
+      { id:24, name: "Ankita Bag", paid:false },
+      { id:25, name: "Anik Ghosh", paid:false },
+      { id:26, name: "Agnik Ghosh", paid:false },
+      { id:27, name: "Isana Sultana", paid:false },
+      { id:28, name: "Aritra Ghosh", paid:false },
+      { id:29, name: "Peu Roy", paid:false },
+      { id:30, name: "Anwesha Chattopadhyay", paid:false },
+      { id:31, name: "Sourovi Mondal", paid:false },
+      { id:32, name: "Koustab Ghosh", paid:false },
+      { id:33, name: "Sayantani Banerjee", paid:false },
+      { id:34, name: "Asif Ali", paid:false },
+      { id:35, name: "Soumik Nath", paid:false },
+      { id:36, name: "Ipsita Banik", paid:false },
+      { id:37, name: "Ankita Majumdar", paid:false },
+      { id:38, name: "Suvanita Sadhu", paid:false },
+      { id:39, name: "Sneha Paramanich", paid:false },
+      { id:40, name: "Ankita Pal", paid:false },
+      { id:41, name: "Ankit Ghosh", paid:false },
+      { id:42, name: "Jidan Molla", paid:false }
+    ];
+
+    let students = [];
+    const FEE_PER_STUDENT = 20;
+    let editingId = null;
+
+    // Elements
+    const studentsTbody = document.getElementById('studentsTbody');
+    const totalStudentsEl = document.getElementById('totalStudents');
+    const collectedCountEl = document.getElementById('collectedCount');
+    const collectedAmountEl = document.getElementById('collectedAmount');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const donutCtx = document.getElementById('donutChart');
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect = document.getElementById('sortSelect');
+
+    // Chart
+    let donutChart = null;
+
+    // --- Storage helpers ---
+    function saveState(){
+      localStorage.setItem('efs_students_v2', JSON.stringify(students));
+      localStorage.setItem('efs_subject', document.getElementById('subjectName').textContent);
+      localStorage.setItem('efs_last_saved', new Date().toLocaleString());
+      document.getElementById('lastSaved').textContent = localStorage.getItem('efs_last_saved');
+    }
+
+    function loadState(){
+      const raw = localStorage.getItem('efs_students_v2');
+      if(raw){
+        try{ students = JSON.parse(raw); }
+        catch(e){ students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS)); }
+      } else {
+        students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+        saveState();
+      }
+      const subj = localStorage.getItem('efs_subject');
+      if(subj) document.getElementById('subjectName').textContent = subj;
+      document.getElementById('lastSaved').textContent = localStorage.getItem('efs_last_saved') || 'Never';
+    }
+
+    // --- Utils ---
+    function uid(){ return Math.floor(Math.random()*1e8); }
+
+    function formatCurrency(n){ return n.toLocaleString('en-IN'); }
+
+    // --- Render ---
+    function render(){
+      // apply filters & search & sort
+      const query = searchInput.value.trim().toLowerCase();
+      const activeFilter = document.querySelector('.chip.active')?.dataset.filter || 'all';
+      const sort = sortSelect.value;
+
+      let list = students.slice();
+
+      if(activeFilter === 'paid') list = list.filter(s=>s.paid);
+      if(activeFilter === 'unpaid') list = list.filter(s=>!s.paid);
+
+      if(query) list = list.filter(s => s.name.toLowerCase().includes(query));
+
+      if(sort === 'name_asc') list.sort((a,b)=>a.name.localeCompare(b.name));
+      if(sort === 'name_desc') list.sort((a,b)=>b.name.localeCompare(a.name));
+      if(sort === 'paid_desc') list.sort((a,b)=> (b.paid - a.paid) || a.name.localeCompare(b.name));
+      if(sort === 'paid_asc') list.sort((a,b)=> (a.paid - b.paid) || a.name.localeCompare(b.name));
+
+      // build table
+      studentsTbody.innerHTML = '';
+      list.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${highlight(s.name, query)}</td>
+          <td><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" class="paid-toggle" data-id="${s.id}" ${s.paid? 'checked': ''}><span class="muted">₹${FEE_PER_STUDENT}</span></label></td>
+          <td><div style="display:flex;align-items:center;gap:8px"><div class="status-dot ${s.paid? 'status-paid':'status-unpaid'}"></div><div>${s.paid? 'Paid':'Not paid'}</div></div></td>
+          <td class="action-buttons">
+            <button class="tiny" data-edit="${s.id}">Edit</button>
+            <button class="tiny" data-delete="${s.id}">Delete</button>
+          </td>
+        `;
+        studentsTbody.appendChild(tr);
+      });
+
+      attachRowListeners();
+      updateStats();
+    }
+
+    function highlight(text, q){
+      if(!q) return escapeHtml(text);
+      const idx = text.toLowerCase().indexOf(q);
+      if(idx === -1) return escapeHtml(text);
+      return escapeHtml(text.substring(0,idx)) + '<mark>' + escapeHtml(text.substring(idx, idx+q.length)) + '</mark>' + escapeHtml(text.substring(idx+q.length));
+    }
+
+    function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function attachRowListeners(){
+      document.querySelectorAll('.paid-toggle').forEach(cb=>{
+        cb.onchange = function(){
+          const id = parseInt(this.dataset.id);
+          const st = students.find(x=>x.id===id);
+          if(st){ st.paid = this.checked; saveState(); render(); }
+        };
+      });
+
+      document.querySelectorAll('[data-edit]').forEach(btn=>{
+        btn.onclick = function(){ openModal('edit', parseInt(this.dataset.edit)); };
+      });
+
+      document.querySelectorAll('[data-delete]').forEach(btn=>{
+        btn.onclick = function(){
+          const id = parseInt(this.dataset.delete);
+          if(confirm('Delete this student?')){ students = students.filter(s=>s.id!==id); saveState(); render(); }
+        };
+      });
+    }
+
+    // --- Stats & Chart ---
+    function updateStats(){
+      const total = students.length;
+      const paidCount = students.filter(s=>s.paid).length;
+      const amount = paidCount * FEE_PER_STUDENT;
+      totalStudentsEl.textContent = total;
+      collectedCountEl.textContent = paidCount;
+      collectedAmountEl.textContent = formatCurrency(amount);
+
+      const pct = total ? Math.round((paidCount/total)*100) : 0;
+      progressFill.style.width = pct + '%';
+      progressText.textContent = pct + '%';
+
+      // donut
+      if(!donutChart){
+        donutChart = new Chart(donutCtx,{
+          type:'doughnut',
+          data:{labels:['Paid','Unpaid'],datasets:[{data:[paidCount, total-paidCount],backgroundColor:['#10b981','#ef4444']}]},
+          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#cbd5e1'}}}}
+        });
+      } else {
+        donutChart.data.datasets[0].data = [paidCount, total-paidCount];
+        donutChart.update();
+      }
+      document.getElementById('feeAmount').textContent = FEE_PER_STUDENT;
+      document.getElementById('lastSaved').textContent = localStorage.getItem('efs_last_saved') || 'Never';
+    }
+
+    // --- Modal ---
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const studentNameInput = document.getElementById('studentNameInput');
+    const saveModalBtn = document.getElementById('saveModal');
+    const cancelModal = document.getElementById('cancelModal');
+
+    function openModal(mode, id){
+      editingId = null;
+      studentNameInput.value = '';
+      if(mode === 'add'){
+        modalTitle.textContent = 'Add Student';
+      } else if(mode === 'edit'){
+        modalTitle.textContent = 'Edit Student';
+        const s = students.find(x=>x.id===id);
+        if(s){ 
+          editingId = id; 
+          studentNameInput.value = s.name; 
+        }
+      }
+      modal.classList.add('open');
+      studentNameInput.focus();
+    }
+
+    function closeModal(){ modal.classList.remove('open'); editingId = null; }
+
+    saveModalBtn.onclick = function(){
+      const name = studentNameInput.value.trim();
+      if(!name){ alert('Enter a name'); return; }
+      if(editingId){
+        const st = students.find(s=>s.id===editingId);
+        if(st){ st.name = name; }
+      } else {
+        students.push({ id: uid(), name: name, paid: false });
+      }
+      saveState(); render(); closeModal();
+    };
+
+    cancelModal.onclick = closeModal;
+
+    // --- File import/export ---
+    document.getElementById('importBtn').onclick = ()=> document.getElementById('importFile').click();
+    document.getElementById('importFile').onchange = async function(e){
+      const f = e.target.files[0]; if(!f) return;
+      try{
+        const text = await f.text(); const data = JSON.parse(text);
+        if(!Array.isArray(data.students)) return alert('Invalid file format');
+        if(confirm(`Import ${data.students.length} students and replace current data?`)){
+          students = data.students; saveState(); render(); alert('Imported');
+        }
+      }catch(err){ alert('Import failed: '+err.message); }
+      this.value = '';
+    };
+
+    document.getElementById('exportJsonBtn').onclick = function(){
+      const payload = { metadata:{ exported_at:new Date().toISOString(), subject:document.getElementById('subjectName').textContent, total:students.length }, students };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `exam_fees_${Date.now()}.json`; a.click(); URL.revokeObjectURL(a.href);
+    };
+
+    // --- Reset button ---
+    document.getElementById('resetBtn').onclick = function(){
+      if(confirm('Reset to default values? This will clear all current data.')) {
+        localStorage.removeItem('efs_students_v2');
+        localStorage.removeItem('efs_last_saved');
+        loadState();
+        render();
+      }
+    };
+
+    // --- Other UI wiring ---
+    document.getElementById('addBtn').onclick = ()=> openModal('add');
+    document.getElementById('searchInput').oninput = debounce(()=> render(), 220);
+    document.getElementById('sortSelect').onchange = ()=> render();
+
+    // chips
+    document.querySelectorAll('.chip').forEach(ch=> ch.onclick = function(){ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); this.classList.add('active'); render(); });
+
+    // Edit chapter name
+    document.getElementById('subjectName').onclick = function(){
+      const newName = prompt('Enter chapter name', this.textContent);
+      if(newName && newName.trim()){ 
+        this.textContent = newName.trim(); 
+        localStorage.setItem('efs_subject', newName.trim()); 
+        saveState(); 
+      }
+    };
+
+    // helper debounce
+    function debounce(fn,wait){ let t; return function(...a){ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), wait); } }
+
+    // highlight improvements for mobile
+    window.addEventListener('resize', ()=>{
+      // keep chart responsive
+      if(donutChart) donutChart.resize();
+    });
+
+    // --- Init ---
+    loadState(); render();
+    // safety: ensure saved timestamp
+    localStorage.setItem('efs_last_saved', localStorage.getItem('efs_last_saved') || new Date().toLocaleString());
+    document.getElementById('lastSaved').textContent = localStorage.getItem('efs_last_saved');
+  </script>
+</body>
+</html>
